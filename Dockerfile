@@ -3,6 +3,9 @@ ARG MAPLIBRE_VERSION=node-v6.3.0
 
 FROM node:24-slim AS builder
 
+# Re-declare ARG to make it available in this stage
+ARG MAPLIBRE_VERSION
+
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
