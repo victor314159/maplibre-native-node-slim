@@ -21,6 +21,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          docker system prune -af
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -44,8 +52,21 @@ jobs:
             --platform linux/amd64 \
             --target builder \
             --load \
+            --cache-from type=gha,scope=amd64 \
+            --cache-to type=gha,mode=max,scope=amd64 \
             -t maplibre-builder:amd64 \
             .
+
+      - name: Extract amd64 binary and cleanup
+        run: |
+          mkdir -p lib/node-v137
+          docker create --name temp-amd64 maplibre-builder:amd64
+          docker cp temp-amd64:/build/maplibre-native/build/platform/node/mbgl-node.abi-137.node lib/node-v137/linux-x64.node
+          docker cp temp-amd64:/build/maplibre-native/platform/node/index.js ./index.js
+          docker cp temp-amd64:/build/maplibre-native/platform/node/index.d.ts ./index.d.ts
+          docker rm temp-amd64
+          docker rmi maplibre-builder:amd64
+          docker system prune -f
 
       - name: Build for linux/arm64
         run: |
@@ -53,29 +74,18 @@ jobs:
             --platform linux/arm64 \
             --target builder \
             --load \
+            --cache-from type=gha,scope=arm64 \
+            --cache-to type=gha,mode=max,scope=arm64 \
             -t maplibre-builder:arm64 \
             .
 
-      - name: Extract binaries from containers
+      - name: Extract arm64 binary and cleanup
         run: |
-          # Create directories
-          mkdir -p lib/node-v137
-          
-          # Extract x64 binary
-          docker create --name temp-amd64 maplibre-builder:amd64
-          docker cp temp-amd64:/build/maplibre-native/build/platform/node/mbgl-node.abi-137.node lib/node-v137/linux-x64.node
-          docker rm temp-amd64
-          
-          # Extract arm64 binary
           docker create --name temp-arm64 maplibre-builder:arm64
           docker cp temp-arm64:/build/maplibre-native/build/platform/node/mbgl-node.abi-137.node lib/node-v137/linux-arm64.node
           docker rm temp-arm64
-          
-          # Extract JavaScript files (from either architecture)
-          docker create --name temp-files maplibre-builder:amd64
-          docker cp temp-files:/build/maplibre-native/platform/node/index.js ./index.js
-          docker cp temp-files:/build/maplibre-native/platform/node/index.d.ts ./index.d.ts
-          docker rm temp-files
+          docker rmi maplibre-builder:arm64
+          docker system prune -f
           
           # Verify files
           ls -lh lib/node-v137/

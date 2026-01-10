@@ -43,7 +43,10 @@ RUN cmake . -B build -G Ninja \
     -DMLN_WITH_OPENGL=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-    -DMLN_WITH_WERROR=OFF
+    -DMLN_WITH_WERROR=OFF \
+    -DBUILD_TESTING=OFF \
+    -DMLN_WITH_CORE_TESTS=OFF \
+    -DMLN_WITH_RENDER_TESTS=OFF
 
 RUN cmake --build build -j $(nproc)
 
