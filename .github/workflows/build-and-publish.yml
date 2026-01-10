@@ -1,0 +1,114 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract MapLibre version from Dockerfile
+        id: version
+        run: |
+          # Extract MAPLIBRE_VERSION from Dockerfile (e.g., node-v6.3.0)
+          MAPLIBRE_VERSION=$(grep -m1 '^ARG MAPLIBRE_VERSION=' Dockerfile | cut -d'=' -f2)
+          echo "maplibre_version=$MAPLIBRE_VERSION" >> $GITHUB_OUTPUT
+          
+          # Extract semver version (e.g., 6.3.0 from node-v6.3.0)
+          VERSION=$(echo $MAPLIBRE_VERSION | sed 's/node-v//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          echo "MapLibre Version: $MAPLIBRE_VERSION"
+          echo "Package Version: $VERSION"
+
+      - name: Build for linux/amd64
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --target builder \
+            --load \
+            -t maplibre-builder:amd64 \
+            .
+
+      - name: Build for linux/arm64
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --target builder \
+            --load \
+            -t maplibre-builder:arm64 \
+            .
+
+      - name: Extract binaries from containers
+        run: |
+          # Create directories
+          mkdir -p lib/node-v137
+          
+          # Extract x64 binary
+          docker create --name temp-amd64 maplibre-builder:amd64
+          docker cp temp-amd64:/build/maplibre-native/build/platform/node/mbgl-node.abi-137.node lib/node-v137/linux-x64.node
+          docker rm temp-amd64
+          
+          # Extract arm64 binary
+          docker create --name temp-arm64 maplibre-builder:arm64
+          docker cp temp-arm64:/build/maplibre-native/build/platform/node/mbgl-node.abi-137.node lib/node-v137/linux-arm64.node
+          docker rm temp-arm64
+          
+          # Extract JavaScript files (from either architecture)
+          docker create --name temp-files maplibre-builder:amd64
+          docker cp temp-files:/build/maplibre-native/platform/node/index.js ./index.js
+          docker cp temp-files:/build/maplibre-native/platform/node/index.d.ts ./index.d.ts
+          docker rm temp-files
+          
+          # Verify files
+          ls -lh lib/node-v137/
+          ls -lh index.js index.d.ts
+
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
+          cat package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@victor314159'
+
+      - name: Publish to GitHub Packages
+        run: |
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add lib/ index.js index.d.ts package.json
+          git commit -m "Build binaries for v$VERSION (MapLibre ${{ steps.version.outputs.maplibre_version }})" || echo "No changes to commit"
+          
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin main
+          git push origin "v$VERSION"

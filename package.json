@@ -1,15 +1,32 @@
 {
-  "name": "test-maplibre-native",
-  "version": "1.0.0",
-  "description": "Test project for MapLibre Native issue #4024",
+  "name": "@victor314159/maplibre-native-node-slim",
+  "version": "6.3.0",
+  "description": "MapLibre Native prebuilt for Debian (Node.js 24, x64 and arm64)",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "start": "node index.js"
   },
-  "dependencies": {
-    "@maplibre/maplibre-gl-native": "^6.0.0"
-  },
   "engines": {
-    "node": ">=18"
-  }
+    "node": ">=24.0.0"
+  },
+  "os": ["linux"],
+  "cpu": ["x64", "arm64"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "lib/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/victor314159/maplibre-native-node-slim.git"
+  },
+  "keywords": [
+    "maplibre",
+    "maplibre-native",
+    "maps",
+    "debian",
+    "prebuilt"
+  ],
+  "license": "BSD-2-Clause"
 }

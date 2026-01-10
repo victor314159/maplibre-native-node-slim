@@ -1,4 +1,6 @@
 # Multi-stage build: Build MapLibre Native from source
+ARG MAPLIBRE_VERSION=node-v6.3.0
+
 FROM node:24-slim AS builder
 
 # Install build dependencies
@@ -28,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /build
 
 # Clone MapLibre Native repository
-RUN git clone --recurse-submodules --depth 1 --branch main https://github.com/maplibre/maplibre-native.git
+RUN git clone --recurse-submodules --depth 1 --branch ${MAPLIBRE_VERSION} https://github.com/maplibre/maplibre-native.git
 
 WORKDIR /build/maplibre-native
 
