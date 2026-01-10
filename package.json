@@ -1,0 +1,15 @@
+{
+  "name": "test-maplibre-native",
+  "version": "1.0.0",
+  "description": "Test project for MapLibre Native issue #4024",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@maplibre/maplibre-gl-native": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
