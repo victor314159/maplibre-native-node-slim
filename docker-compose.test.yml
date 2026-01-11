@@ -1,0 +1,9 @@
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      args:
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
+    image: maplibre-native-node-slim-test
+    container_name: maplibre-test

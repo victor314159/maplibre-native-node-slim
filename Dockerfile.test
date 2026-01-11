@@ -1,0 +1,41 @@
+# Runtime stage
+FROM node:24-slim
+
+ARG GITHUB_TOKEN
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    libcurl4 \
+    libuv1 \
+    libpng16-16 \
+    libicu72 \
+    libjpeg62-turbo \
+    libwebp7 \
+    libglx0 \
+    libgl1 \
+    libopengl0 \
+    libegl1 \
+    libgles2 \
+    libx11-6 \
+    libxext6 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Init npm project
+RUN npm init -y
+
+# Configure npm to use GitHub Packages with token
+RUN echo "@victor314159:registry=https://npm.pkg.github.com" >> .npmrc && \
+    echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
+
+# install our built package
+RUN npm install @victor314159/maplibre-native-node-slim@6.3.0
+
+# Copy index.js
+COPY index.js .
+
+# Replace const mbgl = require('@maplibre/maplibre-gl-native'); with const mbgl = require('@victor314159/maplibre-native-node-slim');
+RUN sed -i "s/@maplibre\/maplibre-gl-native/@victor314159\/maplibre-native-node-slim/g" index.js
+
+CMD ["node", "index.js"]

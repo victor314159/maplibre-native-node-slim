@@ -91,6 +91,12 @@ jobs:
           ls -lh lib/node-v137/
           ls -lh index.js index.d.ts
 
+      - name: Patch index.js for multi-arch support
+        run: |
+          sed -i "s|'./lib/node-v' + process.versions.modules + '/mbgl'|'./lib/node-v' + process.versions.modules + '/linux-' + process.arch + '.node'|g" index.js
+          echo "Patched index.js:"
+          head -10 index.js
+
       - name: Update package.json version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
