@@ -22,6 +22,31 @@ const mbgl = require('@victor314159/maplibre-native-node-slim');
 // Use mbgl.Map, mbgl.Expression, etc.
 ```
 
+## Runtime Dependencies
+
+### Debian (Bookworm) - node:24-slim
+
+When using this package, ensure these system libraries are installed:
+
+```bash
+apt-get install -y \
+    libcurl4 \
+    libuv1 \
+    libpng16-16 \
+    libicu72 \
+    libjpeg62-turbo \
+    libwebp7 \
+    libglx0 \
+    libgl1 \
+    libopengl0 \
+    libegl1 \
+    libgles2 \
+    libx11-6 \
+    libxext6
+```
+
+**Note:** This package is built specifically for Debian. If you're using Ubuntu, use the official `@maplibre/maplibre-gl-native` package instead, which provides Ubuntu-compatible binaries.
+
 ## Supported Platforms
 
 - **OS**: Linux (Debian-based)
