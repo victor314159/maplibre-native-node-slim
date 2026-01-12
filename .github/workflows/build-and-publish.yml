@@ -97,6 +97,12 @@ jobs:
           echo "Patched index.js:"
           head -10 index.js
 
+      - name: Patch index.d.ts module name
+        run: |
+          sed -i "s|@maplibre/maplibre-gl-native|@victor314159/maplibre-native-node-slim|g" index.d.ts
+          echo "Patched index.d.ts:"
+          head -5 index.d.ts
+
       - name: Update package.json version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
