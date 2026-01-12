@@ -2,3 +2,6 @@ node_modules/
 npm-debug.log
 .DS_Store
 .env
+lib/
+index.d.ts
+*.tgz

@@ -122,8 +122,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add lib/ index.js index.d.ts package.json
-          git commit -m "Build binaries for v$VERSION (MapLibre ${{ steps.version.outputs.maplibre_version }})" || echo "No changes to commit"
+          # Only commit package.json version update (binaries are in npm package, not git)
+          git add package.json
+          git commit -m "Bump version to v$VERSION (MapLibre ${{ steps.version.outputs.maplibre_version }})" || echo "No changes to commit"
           
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin main
