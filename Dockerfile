@@ -50,7 +50,7 @@ RUN cmake . -B build -G Ninja \
 
 RUN cmake --build build -j $(nproc)
 
-# Runtime stage, used to test locally the package
+# Runtime stage, used to test locally the package (not used in CI)
 FROM node:24-slim
 
 # Install runtime dependencies only
