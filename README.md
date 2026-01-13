@@ -6,6 +6,8 @@ Prebuilt MapLibre Native binaries for Debian-based Node.js environments (Node.js
 
 The official `@maplibre/maplibre-gl-native` npm package provides prebuilt binaries for Ubuntu 24.04, which are **incompatible with Debian** distributions like `node:slim` Docker images, because of some shared library differences. This package solves that problem by providing Debian-compatible prebuilt binaries.
 
+See https://github.com/maplibre/maplibre-native/issues/4024
+
 ## Installation
 
 ```bash
